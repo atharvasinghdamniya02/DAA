@@ -1,0 +1,53 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int n, target, a[20];
+int *res = NULL;          /* each found subset stored as a bitmask of indices */
+int cnt = 0, cap = 0;
+
+void add(int mask) {
+    if (cnt == cap) {
+        cap = cap ? cap * 2 : 1024;
+        res = (int *)realloc(res, cap * sizeof(int));
+    }
+    res[cnt++] = mask;
+}
+
+void dfs(int start, int sum, int mask) {
+    for (int j = start; j < n; j++) {
+        if (sum + a[j] > target) continue;      /* would overshoot, skip */
+        int nm = mask | (1 << j);
+        if (sum + a[j] == target)
+            add(nm);                            /* found a subset */
+        else
+            dfs(j + 1, sum + a[j], nm);
+    }
+}
+
+int main() {
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) scanf("%d", &a[i]);
+    scanf("%d", &target);
+
+    dfs(0, 0, 0);
+
+    if (cnt == 0) {
+        printf("-1\n");
+        return 0;
+    }
+
+    for (int i = cnt - 1; i >= 0; i--) {        /* last found is printed first */
+        int first = 1;
+        for (int j = 0; j < n; j++) {
+            if (res[i] & (1 << j)) {
+                if (!first) printf(" ");
+                printf("%d", a[j]);
+                first = 0;
+            }
+        }
+        printf("\n");
+    }
+
+    free(res);
+    return 0;
+}
